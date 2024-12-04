@@ -81,31 +81,50 @@ function addSpeedControl(videoContainer) {
   console.log('Speed control added to video player');
 }
 
-// Function to find and process video players
-function findAndProcessVideos() {
-  let videoContainers = new Set([
-    ...document.querySelectorAll('div[aria-label="Embedded video player"]'),
-    ...Array.from(document.querySelectorAll('video')).map(v => v.closest('div'))
-  ].filter(Boolean));
-
-  document.querySelectorAll('video').forEach(video => {
-    let container = video.closest('div[aria-label="Embedded video player"]') || 
-                   video.closest('div');
-    if (container) videoContainers.add(container);
-  });
-
-  if (videoContainers.size > 0) {
-    console.log(`Processing ${videoContainers.size} video(s)`);
-  }
-  
-  videoContainers.forEach(addSpeedControl);
+// Add debouncing utility
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
 }
 
-// Observer to watch for new video players being added to the page
+// Modify the findAndProcessVideos function to be more selective
+function findAndProcessVideos(targetNode = document) {
+  // Only process if we're looking at a new node or the document
+  let videoContainers = new Set([
+    ...targetNode.querySelectorAll('div[aria-label="Embedded video player"]'),
+    ...Array.from(targetNode.querySelectorAll('video')).map(v => v.closest('div'))
+  ].filter(Boolean));
+
+  if (videoContainers.size > 0) {
+    console.debug(`Processing ${videoContainers.size} new video(s)`);
+    videoContainers.forEach(addSpeedControl);
+  }
+}
+
+// Create a debounced version of the function
+const debouncedFindVideos = debounce(findAndProcessVideos, 250);
+
+// Modify the observer to be more targeted
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     if (mutation.addedNodes.length) {
-      findAndProcessVideos();
+      // Check if any added node contains or is a video
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.querySelector('video') || 
+              node.tagName === 'VIDEO' ||
+              node.querySelector('div[aria-label="Embedded video player"]')) {
+            debouncedFindVideos(node);
+          }
+        }
+      });
     }
   }
 });
@@ -127,9 +146,8 @@ chrome.storage.sync.get({
       subtree: true
     });
     
-    // Also search after a delay to catch dynamically loaded content
+    // Single delayed check for any missed videos
     setTimeout(findAndProcessVideos, 2000);
-    setTimeout(findAndProcessVideos, 5000);
   }
 });
 
