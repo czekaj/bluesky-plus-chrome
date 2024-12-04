@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Bluesky+",
+  "version": "1.0",
+  "description": "Enhances Bluesky with additional features like video playback speed control",
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["https://bsky.app/*"],
+      "js": ["content.js"]
+    }
+  ]
+} 
