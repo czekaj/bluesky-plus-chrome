@@ -151,6 +151,23 @@ chrome.storage.sync.get({
   }
 });
 
+let enableTrendingHashtags = true; // Default value
+
+// Get settings from storage
+chrome.storage.sync.get({
+  enableTrendingHashtags: true  // Default value
+}, (items) => {
+  enableTrendingHashtags = items.enableTrendingHashtags;
+  if (enableTrendingHashtags) {
+    // Initialize trending hashtags
+    addTrendingHashtags();
+    trendingObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+});
+
 // Function to add trending hashtags
 function addTrendingHashtags() {
   // Skip if we're on a search page
@@ -242,13 +259,6 @@ const trendingObserver = new MutationObserver((mutations) => {
   }
 });
 
-// Initialize trending hashtags
-addTrendingHashtags();
-trendingObserver.observe(document.body, {
-  childList: true,
-  subtree: true
-});
-
 // Add badge to Bluesky logo
 function addBadgeToLogo() {
   const svg = document.querySelector(`svg path[fill="#0085ff"]`)?.closest('svg');
@@ -263,7 +273,7 @@ function addBadgeToLogo() {
   plus.setAttribute('x', '52');     // moved right
   plus.setAttribute('y', '28.5');    // moved down
   plus.setAttribute('text-anchor', 'middle');
-  plus.setAttribute('font-size', '32');  // increased font size
+  plus.setAttribute('font-size', '36');  // increased font size
   plus.setAttribute('fill', 'white');
   plus.setAttribute('font-family', 'Arial');
   plus.setAttribute('font-weight', 'bold');
