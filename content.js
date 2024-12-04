@@ -49,30 +49,17 @@ document.head.appendChild(trendingStyles);
 
 // Function to add speed control to a video player
 function addSpeedControl(videoContainer) {
-  console.log('Attempting to add speed control to:', videoContainer);
-  
-  // Find the video element
-  const video = videoContainer.querySelector('video');
-  if (!video) {
-    console.log('No video element found');
-    return;
-  }
-  
   if (videoContainer.querySelector('.bsky-speed-control')) {
-    console.log('Speed control already exists');
     return;
   }
 
-  // Try different selectors for controls
+  const video = videoContainer.querySelector('video');
+  if (!video) return;
+
   const controls = videoContainer.querySelector('[data-testid="scrubber"]')?.parentElement?.querySelector('div:last-child') ||
                   videoContainer.querySelector('video')?.closest('div')?.querySelector('div:last-child');
 
-  if (!controls) {
-    console.log('No controls container found');
-    return;
-  }
-
-  console.log('Found controls:', controls);
+  if (!controls) return;
 
   const speedButton = document.createElement('button');
   speedButton.className = 'bsky-speed-control';
@@ -91,27 +78,26 @@ function addSpeedControl(videoContainer) {
 
   // Try to insert at the beginning of controls
   controls.insertBefore(speedButton, controls.firstChild);
-  console.log('Speed control added successfully');
+  console.log('Speed control added to video player');
 }
 
 // Function to find and process video players
 function findAndProcessVideos() {
-  console.log('Searching for videos...');
-  
-  // Try different selectors
   let videoContainers = new Set([
     ...document.querySelectorAll('div[aria-label="Embedded video player"]'),
     ...Array.from(document.querySelectorAll('video')).map(v => v.closest('div'))
   ].filter(Boolean));
 
-  // Additional method to find video containers
   document.querySelectorAll('video').forEach(video => {
     let container = video.closest('div[aria-label="Embedded video player"]') || 
                    video.closest('div');
     if (container) videoContainers.add(container);
   });
 
-  console.log('Found video containers:', videoContainers.size);
+  if (videoContainers.size > 0) {
+    console.log(`Processing ${videoContainers.size} video(s)`);
+  }
+  
   videoContainers.forEach(addSpeedControl);
 }
 
@@ -241,6 +227,46 @@ const trendingObserver = new MutationObserver((mutations) => {
 // Initialize trending hashtags
 addTrendingHashtags();
 trendingObserver.observe(document.body, {
+  childList: true,
+  subtree: true
+});
+
+// Add badge to Bluesky logo
+function addBadgeToLogo() {
+  const svg = document.querySelector(`svg path[fill="#0085ff"]`)?.closest('svg');
+  if (!svg || svg.querySelector('.bsky-plus-badge')) return;
+
+  // Create the badge group
+  const badgeGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  badgeGroup.classList.add('bsky-plus-badge');
+  
+  // Create plus sign - increased size and adjusted position
+  const plus = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  plus.setAttribute('x', '52');     // moved right
+  plus.setAttribute('y', '28.5');    // moved down
+  plus.setAttribute('text-anchor', 'middle');
+  plus.setAttribute('font-size', '32');  // increased font size
+  plus.setAttribute('fill', 'white');
+  plus.setAttribute('font-family', 'Arial');
+  plus.setAttribute('font-weight', 'bold');
+  plus.textContent = '+';
+  
+  badgeGroup.appendChild(plus);
+  svg.appendChild(badgeGroup);
+}
+
+// Add observer for logo badge
+const logoObserver = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    if (mutation.addedNodes.length) {
+      addBadgeToLogo();
+    }
+  }
+});
+
+// Initialize logo badge
+addBadgeToLogo();
+logoObserver.observe(document.body, {
   childList: true,
   subtree: true
 }); 
