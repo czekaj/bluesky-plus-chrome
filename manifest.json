@@ -3,7 +3,8 @@
   "name": "Bluesky+",
   "version": "1.0",
   "description": "Enhances Bluesky with additional features like video playback speed control",
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage"],
+  "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["https://bsky.app/*"],

@@ -99,16 +99,25 @@ const observer = new MutationObserver((mutations) => {
   }
 });
 
-// Start observing
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
-console.log('Observer started');
+let enableVideoControls = true; // Default value
 
-// Initial search for videos
-findAndProcessVideos();
-
-// Also search after a delay to catch dynamically loaded content
-setTimeout(findAndProcessVideos, 2000);
-setTimeout(findAndProcessVideos, 5000); 
+// Check settings before initializing
+chrome.storage.sync.get({
+  enableVideoControls: true  // Default value
+}, (items) => {
+  enableVideoControls = items.enableVideoControls;
+  if (enableVideoControls) {
+    // Initial search for videos
+    findAndProcessVideos();
+    
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    // Also search after a delay to catch dynamically loaded content
+    setTimeout(findAndProcessVideos, 2000);
+    setTimeout(findAndProcessVideos, 5000);
+  }
+}); 
