@@ -1,9 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Bluesky+",
-  "version": "1.0",
+  "version": "0.0.1",
   "description": "Enhances Bluesky with additional features like video playback speed control",
-  "permissions": ["activeTab", "storage"],
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "wss://*.bsky.network/*"
+  ],
   "options_page": "options.html",
   "content_scripts": [
     {

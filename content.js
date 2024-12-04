@@ -149,6 +149,9 @@ chrome.storage.sync.get({
 
 // Function to add trending hashtags
 function addTrendingHashtags() {
+  // Skip if we're on a search page
+  if (window.location.pathname.startsWith('/search')) return;
+
   const searchInput = document.querySelector('input[role="search"]');
   if (!searchInput || searchInput.closest('.trending-parent')) return;
 
